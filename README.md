@@ -1,153 +1,240 @@
-# IRBAS — Agricultural Intelligence Dashboard
+# 🌾 Mul Biotech Farms — Agricultural Intelligence Platform
 
-**28-state Indian agricultural resource and intelligence dashboard — crop water analytics, irrigation risk scoring, and state-level SWOT profiling.**
+**30-state Indian Agricultural Intelligence Dashboard** for crop water analytics, irrigation risk assessment, commodity intelligence, and state-level SWOT profiling.
 
-🌐 **Project Page:** https://soumodip18.github.io/IRBAS-Agricultural-Intelligence-Dashboard  
-📊 **Live Dashboard:** https://app.powerbi.com/groups/me/reports/a0292903-1432-4493-9f5f-a8a94678a6e2  
-🏫 **Institution:** M.Sc. Data Science · TU Dortmund University · 2026  
-🏢 **Organisation:** IRBAS Commercial Operations
+**Position:** Data Engineering & Analytics Intern  
+**Organization:** Mul Biotech Farms / SequestraBionix Foundation
 
 ---
 
-## What This Project Does
+# Overview
 
-This pipeline collects, cleans, and visualises agricultural intelligence data across 28 Indian states. It answers two questions:
+This project develops an agricultural intelligence platform covering **30 Indian states** by integrating research datasets into a production-ready analytical model.
 
-1. **Where are things happening?** — State-level risk alerts, SWOT profiles, and mandi price comparisons on an interactive map.
-2. **What are the resource pressures?** — Crop water footprints, irrigation dependency scores, and seasonal cultivation calendars.
+The platform answers two primary questions:
+
+- **Where are agricultural risks concentrated?**
+  - State-wise environmental and economic risks
+  - SWOT analysis
+  - Commodity price intelligence
+  - Interactive geographic visualization
+
+- **How are agricultural resources utilized?**
+  - Crop water footprints
+  - Irrigation dependency analysis
+  - Seasonal crop calendars
+  - Resource allocation insights
+
+The repository contains the complete ETL workflow, normalized data model, Power BI dashboards, and deployment assets.
 
 ---
 
-## Repository Structure
+# Repository Structure
 
-```
+```text
 IRBAS-Agricultural-Intelligence-Dashboard/
 │
-├── index.html                          ← GitHub Pages project site
+├── index.html
 ├── README.md
-├── LICENSE
+│
+├── .github/
+│   └── workflows/
+│       └── scrape.yml
 │
 ├── dashboard/
-│   ├── india_crop_water_resource_dashboard-kartik.pbix
+│   ├── commodity_price_intelligence_dashboard-lavanya.pbix
 │   ├── executive_commodity_analysis-malvika.pbix
-│   └── commodity_price_intelligence_dashboard-lavanya.pbix
+│   └── india_crop_water_resource_dashboard-kartik.pbix
 │
 ├── data/
-│   ├── Custom_PowerBI_Agriculture_Model.xlsx   ← Normalized star schema (6 tables)
-│   ├── State Assessment Dashboard Agriculture.xlsx  ← Raw 29-sheet source
-│   └── India_Master_Mandi_DB.xlsx              ← 91,000+ mandi price rows
-│
-├── scripts/
-│   └── cloud_pipeline.py               ← Selenium scraper + Google Drive uploader
+│   ├── Custom_PowerBI_Agriculture_Model.xlsx
+│   └── State Assessment Dashboard Agriculture.xlsx
 │
 ├── docs/
-│   └── data_dictionary.md              ← Column reference for all 6 tables
+│   └── data_dictionary.md
 │
-└── .github/
-    └── workflows/
-        └── scrape.yml                  ← Scheduled GitHub Actions scraper
+└── scripts/
+    └── cloud_pipeline.py
 ```
 
 ---
 
-## Data Model
+# Data Architecture
 
-Star schema with 1 dimension table and 5 fact tables. All relationships run through `dim_State[State]`.
+The project uses a **Star Schema** optimized for Power BI.
 
-| Table | Rows | Description |
-|---|---|---|
-| `dim_State` | 28 | State, Region, Contributor, SourceSheet |
-| `fact_Risks` | 56 | Environmental & Economic risks — 3 bullets per state per type |
-| `fact_CropTimeline` | 511 | Crop, Season, Sowing/Harvest periods — 0 blanks |
-| `fact_WaterEconomics` | 326 | Water footprint (L/kg), Irrigation Dependency Rank (1–8) |
-| `fact_SWOT` | 269 | Strengths, Weaknesses, Opportunities, Threats per state |
-| `fact_AdvantagesConstraints` | 760 | Structural advantages and constraints per state |
+```
+                dim_State
+                    │
+      ┌─────────────┼─────────────┐
+      │             │             │
+fact_Risks   fact_CropTimeline   fact_SWOT
+      │
+fact_WaterEconomics
+      │
+fact_AdvantagesConstraints
+```
 
-**Data quality work:** 87 issues fixed including 332 blank Season values (65%), 49 blank water footprints, 70 blank irrigation ranks, 8 junk placeholder rows, and 9 states missing from fact_Risks.
+Every fact table joins directly to:
+
+```
+dim_State[State]
+```
 
 ---
 
-## Setup
+# Data Model
 
-### 1. Clone the repo
+| Table | Rows | Description |
+|------|------:|-------------|
+| `dim_State` | 30 | State master table containing regions, contributors, and source mappings |
+| `fact_Risks` | 56 | Environmental and economic risk profiles |
+| `fact_CropTimeline` | 511 | Crop season classifications with sowing and harvesting schedules |
+| `fact_WaterEconomics` | 326 | Water footprint and irrigation dependency metrics |
+| `fact_SWOT` | 269 | Strengths, weaknesses, opportunities, and threats |
+| `fact_AdvantagesConstraints` | 760 | State-wise operational advantages and constraints |
+
+---
+
+# Data Engineering Highlights
+
+- Resolved **87** preprocessing issues.
+- Filled **332** missing seasonal values.
+- Recomputed **49** missing crop water footprint values.
+- Reconstructed **70** irrigation dependency rankings.
+- Removed **8** invalid placeholder records.
+- Backfilled missing agricultural profiles for **9** states.
+- Converted a fragmented **30-sheet Excel workbook** into a normalized production-ready star schema.
+
+---
+
+# Dashboards
+
+The repository contains three Power BI dashboards.
+
+| Dashboard | Description |
+|-----------|-------------|
+| **India Crop Water Resource Dashboard** | Water footprint, irrigation dependency, crop analytics |
+| **Commodity Price Intelligence Dashboard** | Commodity market and mandi price analysis |
+| **Executive Commodity Analysis Dashboard** | Executive-level agricultural KPIs |
+
+---
+
+# Technologies Used
+
+- Python
+- Pandas
+- Selenium
+- OpenPyXL
+- Google APIs
+- Power BI
+- GitHub Actions
+- HTML
+
+---
+
+# Installation
+
+Clone the repository.
 
 ```bash
 git clone https://github.com/soumodip18/IRBAS-Agricultural-Intelligence-Dashboard.git
+
 cd IRBAS-Agricultural-Intelligence-Dashboard
 ```
 
-### 2. Install dependencies
+Install the required packages.
 
 ```bash
-pip install selenium webdriver-manager pandas openpyxl \
-            google-auth google-api-python-client
+pip install pandas selenium webdriver-manager openpyxl \
+google-auth google-api-python-client
 ```
 
-### 3. Run the scraper locally
+Run the ETL pipeline.
 
 ```bash
 python scripts/cloud_pipeline.py
 ```
 
-This scrapes all 30 state portals and saves `India_Master_Mandi_DB.csv`, then uploads to Google Drive. Requires `GCP_CREDENTIALS` environment variable set to your Service Account JSON.
+---
 
-### 4. Open the Power BI dashboard
+# Power BI Configuration
 
-- Download the `.pbix` from `dashboard/`
-- Open in Power BI Desktop
-- Update data source path: **Transform Data → Data Source Settings → Change Source** → point to `data/Custom_PowerBI_Agriculture_Model.xlsx`
+1. Open one of the `.pbix` files inside the `dashboard` directory.
+2. Open **Transform Data**.
+3. Navigate to:
 
-### 5. GitHub Actions (automated scraping)
+```
+Data Source Settings
+```
 
-Add your Google Cloud Service Account JSON as a repository secret named `GCP_CREDENTIALS`. The workflow in `.github/workflows/scrape.yml` runs the scraper on a schedule.
+4. Update the source path to:
+
+```
+data/Custom_PowerBI_Agriculture_Model.xlsx
+```
+
+5. Refresh the dataset.
 
 ---
 
-## Embedding the Dashboard
+# Dashboard Deployment
 
-Once the Power BI admin restriction is lifted (college IT or corporate account), generate the embed code via:
-
-**Power BI → Share → Embed → Publish to Web**
-
-Then replace the placeholder in `index.html`:
+After publishing the report to Power BI Service, generate an embed link and replace the iframe source inside `index.html`.
 
 ```html
 <iframe
-  src="YOUR_EMBED_URL_HERE"
-  width="100%"
-  height="800"
-  allowFullScreen="true"
-  style="border:none;">
+    src="YOUR_POWERBI_EMBED_URL"
+    width="100%"
+    height="800"
+    frameborder="0"
+    allowfullscreen>
 </iframe>
 ```
 
 ---
 
-## DAX Measures Reference
+# DAX Measures
 
 | Measure | Purpose |
-|---|---|
-| `Selected State Key Risk` | Displays Environmental + Economic risk bullets for selected state |
-| `Gauge Irrigation Score` | Average IrrigationDependencyRank (1–8) for selected state |
-| `% High Irrigation Dependency` | % of crops with rank ≥ 6 |
-| `National Avg Irrigation Score` | Benchmark using REMOVEFILTERS |
-| `Dynamic Profile Title` | Auto-updates page header on state selection |
-| `Avg Water Footprint` | Average L/kg for selected state/crop |
+|----------|---------|
+| `Selected State Key Risk` | Displays state-specific risk summaries |
+| `Gauge Irrigation Score` | Calculates average irrigation dependency |
+| `% High Irrigation Dependency` | Percentage of crops with dependency rank ≥ 6 |
+| `National Avg Irrigation Score` | National benchmark using `REMOVEFILTERS()` |
+| `Dynamic Profile Title` | Updates report titles dynamically |
+| `Avg Water Footprint` | Average crop water requirement (L/kg) |
 
 ---
 
-## Contributors
+# Team
 
-| Name | Role | States Covered |
-|---|---|---|
-| Kartik Patade | Data Engineering, ETL, Normalization, Dashboard | Karnataka, Tamil Nadu, AP, Telangana, Odisha, Kerala, Goa, Arunachal Pradesh, Punjab, Haryana, MP, Assam, Chhattisgarh, Sikkim, Mizoram, Nagaland |
-| Nada Khan | State Research | 7 states — North & West India |
-| Lavanya Dive | State Research, Price Intelligence Dashboard | 7 states — Central India |
-| Malavika Nair | State Research, Commodity Dashboard | 7 states — East & Northeast India |
-| Soumodip Atanu Roy | Project Mentor | IRBAS Managing Director |
+| Member | Responsibility |
+|---------|----------------|
+| **Kartik Patade** | ETL Development, Crop and Water Analysis Dashboard |
+| **Roshan** | Regional Agricultural Research and Analytics |
+| **Lavanya Dive** | Commodity Price Intelligence Dashboard |
+| **Malavika Nair** | Executive Commodity Analytics Dashboard |
+| **Soumodip Atanu Roy** | Technical Mentor and Project Lead |
 
 ---
 
-## License
+# Project Features
 
-MIT — see `LICENSE` for details.
+- Agricultural intelligence across **30 Indian states**
+- Automated ETL pipeline
+- Power BI interactive dashboards
+- Crop water footprint analytics
+- Irrigation dependency scoring
+- SWOT profiling
+- Commodity intelligence
+- GitHub Actions automation
+- Normalized relational data model
+
+---
+
+# License
+
+This project is licensed under the **MIT License**.
+
+See the `LICENSE` file for details.

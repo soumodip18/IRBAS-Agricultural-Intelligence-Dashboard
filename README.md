@@ -1,6 +1,8 @@
+# IRBAS Agricultural Intelligence Dashboard
+
 # 🌾 Mul Biotech Farms — Agricultural Intelligence Platform
 
-**30-state Indian Agricultural Intelligence Dashboard** for crop water analytics, irrigation risk assessment, commodity intelligence, and state-level SWOT profiling.
+**28-state Indian Agricultural Intelligence Dashboard** for crop water analytics, irrigation risk assessment, commodity intelligence, and state-level SWOT profiling.
 
 **Position:** Data Engineering & Analytics Intern  
 **Organization:** Mul Biotech Farms / SequestraBionix Foundation

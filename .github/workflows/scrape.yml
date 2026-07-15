@@ -3,7 +3,7 @@ name: Daily Mandi Price Scraper
 on:
   schedule:
     # Runs every day at 6:00 AM IST (00:30 UTC)
-    - cron: '30 0 * * *'
+    #- cron: '30 0 * * *'
   workflow_dispatch:
     # Also allows manual trigger from GitHub Actions tab
 

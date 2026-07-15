@@ -701,8 +701,8 @@
 </footer>
 
 <!-- ── DISCLAIMER OVERLAY ── -->
-<div id="disc-overlay" style="position:fixed;inset:0;z-index:200;background:rgba(16,30,36,.85);backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:1rem">
-  <div style="background:var(--indigo);border:1px solid var(--line-dk);max-width:500px;width:100%;border-radius:4px;padding:2rem;position:relative">
+<div id="disc-overlay" style="position:fixed;inset:0;z-index:200;background:rgba(16,30,36,.85);backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:1rem;overflow-y:auto">
+  <div style="background:var(--indigo);border:1px solid var(--line-dk);max-width:500px;width:100%;border-radius:4px;padding:2rem;position:relative;margin:auto">
     <div style="font-family:var(--mono);font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:var(--turmeric);margin-bottom:.75rem">Before you continue</div>
     <h3 style="font-family:var(--disp);font-weight:400;font-size:1.25rem;color:var(--paper);margin-bottom:.9rem;line-height:1.25">Attribution &amp; Usage Agreement</h3>
     <p style="font-size:.83rem;color:#B7C6CC;line-height:1.75;margin-bottom:1rem">This project was developed under <strong style="color:var(--paper)">Mul Biotech Farms</strong> by the contributing research team. By accessing, downloading, or sharing this work, you agree to the following terms:</p>
@@ -711,10 +711,23 @@
       · Do not redistribute the data, dashboards, or scripts as your own work<br>
       · Pass explicit credits to the contributing researchers when sharing
     </span>
-    <div style="padding:.75rem .9rem;border:1px solid #7A2020;background:rgba(180,30,30,.12);border-radius:2px;margin-bottom:1.3rem">
+    <div style="padding:.75rem .9rem;border:1px solid #7A2020;background:rgba(180,30,30,.12);border-radius:2px;margin-bottom:1.4rem">
       <span style="font-family:var(--mono);font-size:.63rem;letter-spacing:.1em;text-transform:uppercase;color:#E07070;display:block;margin-bottom:.35rem">⚠ Warning</span>
       <p style="font-size:.77rem;color:#E0A0A0;line-height:1.65">Unauthorized use, plagiarism, or failure to provide explicit attribution constitutes a violation of the usage terms and will result in intellectual property reporting and action.</p>
     </div>
+
+    <!-- Access log form -->
+    <div style="margin-bottom:1.3rem">
+      <div style="font-family:var(--mono);font-size:.63rem;letter-spacing:.1em;text-transform:uppercase;color:#8AA3AB;margin-bottom:.9rem">Register your access</div>
+      <div style="display:flex;flex-direction:column;gap:.65rem">
+        <input id="disc-name"  type="text"  placeholder="Full name *"         style="background:var(--indigo-2);border:1px solid var(--line-dk);color:var(--paper);padding:.6rem .85rem;border-radius:2px;font-size:.83rem;font-family:var(--sans);outline:none;width:100%" />
+        <input id="disc-email" type="email" placeholder="Email address *"     style="background:var(--indigo-2);border:1px solid var(--line-dk);color:var(--paper);padding:.6rem .85rem;border-radius:2px;font-size:.83rem;font-family:var(--sans);outline:none;width:100%" />
+        <input id="disc-org"   type="text"  placeholder="Organisation / Institution" style="background:var(--indigo-2);border:1px solid var(--line-dk);color:var(--paper);padding:.6rem .85rem;border-radius:2px;font-size:.83rem;font-family:var(--sans);outline:none;width:100%" />
+        <input id="disc-phone" type="tel"   placeholder="Phone number"        style="background:var(--indigo-2);border:1px solid var(--line-dk);color:var(--paper);padding:.6rem .85rem;border-radius:2px;font-size:.83rem;font-family:var(--sans);outline:none;width:100%" />
+      </div>
+      <p id="disc-err" style="color:#E07070;font-size:.75rem;margin-top:.5rem;display:none">Please enter your name and email to continue.</p>
+    </div>
+
     <div style="display:flex;gap:.75rem;justify-content:flex-end;flex-wrap:wrap">
       <button onclick="closeDisclaimer()" style="padding:.6rem 1.2rem;border:1px solid var(--line-dk);background:transparent;color:#9FB4BC;border-radius:2px;font-size:.82rem;cursor:pointer;font-family:var(--sans)">Cancel</button>
       <button id="disc-url" onclick="proceedDownload()" data-href="" style="padding:.6rem 1.4rem;background:var(--turmeric);color:var(--indigo);border:none;border-radius:2px;font-size:.82rem;font-weight:700;cursor:pointer;font-family:var(--sans)">I agree · Continue ↗</button>
@@ -759,16 +772,55 @@
   }
 
   /* ── DISCLAIMER POPUP ── */
+  var SHEETS_URL = 'https://script.google.com/macros/s/AKfycbymvpoiQ7NR59bx6Ft7pd5pRymfn5waEPuyNaDcGiIV73F7m4gsn6NP5QE4GRml0VVx/exec';
+
   function showDisclaimer(url){
     document.getElementById('disc-url').dataset.href = url;
+    // clear previous inputs and errors
+    ['disc-name','disc-email','disc-org','disc-phone'].forEach(function(id){ document.getElementById(id).value=''; });
+    document.getElementById('disc-err').style.display='none';
     document.getElementById('disc-overlay').classList.add('open');
   }
   function closeDisclaimer(){ document.getElementById('disc-overlay').classList.remove('open'); }
+
   function proceedDownload(){
-    var url = document.getElementById('disc-url').dataset.href;
-    closeDisclaimer();
-    window.open(url,'_blank','noopener');
+    var name  = document.getElementById('disc-name').value.trim();
+    var email = document.getElementById('disc-email').value.trim();
+    var org   = document.getElementById('disc-org').value.trim();
+    var phone = document.getElementById('disc-phone').value.trim();
+    var url   = document.getElementById('disc-url').dataset.href;
+
+    // validate required fields
+    if(!name || !email){
+      document.getElementById('disc-err').style.display='block';
+      return;
+    }
+    document.getElementById('disc-err').style.display='none';
+
+    // update button to show loading state
+    var btn = document.getElementById('disc-url');
+    btn.textContent = 'Logging access…';
+    btn.disabled = true;
+
+    // submit to Google Sheets (no-cors, fire and forget)
+    var payload = new FormData();
+    payload.append('name',  name);
+    payload.append('email', email);
+    payload.append('org',   org);
+    payload.append('phone', phone);
+    payload.append('file',  url);
+    payload.append('time',  new Date().toISOString());
+
+    fetch(SHEETS_URL, { method:'POST', body:payload, mode:'no-cors' })
+      .catch(function(){}) // silently ignore CORS errors — data still logs
+      .finally(function(){
+        btn.textContent = 'I agree · Continue ↗';
+        btn.disabled = false;
+        closeDisclaimer();
+        window.open(url,'_blank','noopener');
+      });
   }
+
   function showRepoDisclaimer(e){
     e.preventDefault();
     showDisclaimer('https://github.com/soumodip18/IRBAS-Agricultural-Intelligence-Dashboard');

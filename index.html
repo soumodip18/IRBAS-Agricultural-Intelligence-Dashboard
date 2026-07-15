@@ -100,12 +100,50 @@
   .screen-bar{background:#112730;padding:.55rem .9rem;display:flex;align-items:center;gap:.45rem;border-bottom:1px solid var(--line-dk)}
   .sd{width:9px;height:9px;border-radius:50%}
   .screen-file{font-family:var(--mono);font-size:.68rem;color:#6E8992;margin-left:.5rem}
-  .screen-body{position:relative;padding-bottom:56%}
-  .screen-inner{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:2rem;gap:1.1rem;background:radial-gradient(circle at 50% 40%,#1E4150,#132A34)}
-  .screen-emoji{font-size:2.6rem}
-  .screen-inner p{font-size:.85rem;color:#A9BEC5;max-width:30rem;line-height:1.65}
-  .screen-inner .open{display:inline-flex;align-items:center;gap:.4rem;padding:.6rem 1.3rem;background:var(--turmeric);color:var(--indigo);border-radius:2px;font-size:.82rem;font-weight:600;text-decoration:none}
-  .screen-inner .open:hover{background:#EDB63A}
+  .screen-body{position:relative;padding-bottom:56%;overflow:hidden;cursor:pointer;}
+
+  /* blurred thumbnail background */
+  .screen-bg{
+    position:absolute;inset:0;
+    background-size:cover;background-position:center top;
+    filter:blur(1px) brightness(0.55);
+    transform:scale(1.03);
+    transition:filter .3s;
+  }
+  .screen:hover .screen-bg{filter:blur(0px) brightness(0.65)}
+
+  /* overlay content on top of thumbnail */
+  .screen-inner{
+    position:absolute;inset:0;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    text-align:center;padding:2rem;gap:1.1rem;
+    background:transparent;
+    z-index:2;
+  }
+  .screen-badge{
+    display:inline-flex;align-items:center;gap:.4rem;
+    background:rgba(18,39,48,.7);backdrop-filter:blur(6px);
+    border:1px solid rgba(255,255,255,.12);
+    padding:.35rem .8rem;border-radius:20px;
+    font-family:var(--mono);font-size:.64rem;letter-spacing:.08em;color:#9FB4BC;
+    margin-bottom:.3rem;
+  }
+  .screen-badge span{width:6px;height:6px;border-radius:50%;background:#DFA425;display:inline-block}
+  .screen-inner h3{
+    font-family:var(--disp);font-weight:400;font-size:1.4rem;
+    color:#fff;line-height:1.2;max-width:22rem;
+    text-shadow:0 2px 12px rgba(0,0,0,.8);
+  }
+  .screen-inner p{font-size:.8rem;color:rgba(255,255,255,.65);max-width:24rem;line-height:1.5;
+    text-shadow:0 1px 6px rgba(0,0,0,.9);}
+  .screen-inner .open{
+    display:inline-flex;align-items:center;gap:.45rem;
+    padding:.7rem 1.6rem;background:var(--turmeric);color:var(--indigo);
+    border-radius:3px;font-size:.86rem;font-weight:700;text-decoration:none;
+    box-shadow:0 4px 20px rgba(0,0,0,.5);transition:all .18s;
+    margin-top:.3rem;
+  }
+  .screen-inner .open:hover{background:#EDB63A;transform:translateY(-1px);box-shadow:0 6px 24px rgba(0,0,0,.6)}
   .note{margin-top:1rem;font-size:.8rem;color:var(--ink-soft);border-left:2px solid var(--turmeric);padding:.5rem .85rem;background:rgba(223,164,37,.08)}
 
   .ledger{border:1px solid var(--line);background:var(--paper-2)}
@@ -139,8 +177,11 @@
   .asset-desc{font-size:.79rem;color:var(--ink-soft);flex:1}
   .asset-foot{display:flex;justify-content:space-between;align-items:center;padding-top:.3rem}
   .asset-size{font-family:var(--mono);font-size:.66rem;color:#9A9A85}
-  .asset-dl{font-size:.75rem;font-weight:600;color:var(--teal);text-decoration:none}
+  .asset-dl{font-size:.75rem;font-weight:600;color:var(--teal);text-decoration:none;display:inline-flex;align-items:center;gap:.3rem}
   .asset-dl:hover{color:var(--indigo)}
+  .asset-dl.locked{color:var(--ink-soft);cursor:default;pointer-events:none;opacity:.7}
+  .asset-dl.repo{color:var(--teal)}
+  .asset-dl.repo:hover{color:var(--indigo)}
 
   .team{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:1rem}
   .member{border:1px solid var(--line);background:var(--paper-2);padding:1.25rem}
@@ -160,19 +201,161 @@
   .code .c{color:#6E8992}
   .code .g{color:var(--turmeric)}
 
+  #disc-overlay{display:none}
+  #disc-overlay.open{display:flex}
+
   footer{background:var(--indigo);color:#8AA3AB;border-top:1px solid var(--line-dk);padding:2.4rem 0}
   .foot-grid{display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap}
   .foot-brand{font-family:var(--disp);font-style:italic;font-size:1.15rem;color:var(--paper)}
   .foot-meta{font-size:.76rem;line-height:1.7;text-align:right}
   .foot-meta a{color:var(--turmeric);text-decoration:none}
 
+  /* ── SCROLL ANIMATIONS ── */
+
+  /* base reveal — fires when element is 20% into view, not just edge */
+  .reveal{opacity:0;transform:translateY(36px);transition:opacity .65s cubic-bezier(.22,1,.36,1),transform .65s cubic-bezier(.22,1,.36,1)}
+  .reveal.visible{opacity:1;transform:none}
+  .reveal-left{opacity:0;transform:translateX(-36px);transition:opacity .65s cubic-bezier(.22,1,.36,1),transform .65s cubic-bezier(.22,1,.36,1)}
+  .reveal-left.visible{opacity:1;transform:none}
+  .reveal-right{opacity:0;transform:translateX(36px);transition:opacity .65s cubic-bezier(.22,1,.36,1),transform .65s cubic-bezier(.22,1,.36,1)}
+  .reveal-right.visible{opacity:1;transform:none}
+
+  /* stagger — each child slides up in sequence */
+  .stagger > *{opacity:0;transform:translateY(24px);transition:opacity .5s cubic-bezier(.22,1,.36,1),transform .5s cubic-bezier(.22,1,.36,1)}
+  .stagger.visible > *:nth-child(1){opacity:1;transform:none;transition-delay:.04s}
+  .stagger.visible > *:nth-child(2){opacity:1;transform:none;transition-delay:.11s}
+  .stagger.visible > *:nth-child(3){opacity:1;transform:none;transition-delay:.18s}
+  .stagger.visible > *:nth-child(4){opacity:1;transform:none;transition-delay:.25s}
+  .stagger.visible > *:nth-child(5){opacity:1;transform:none;transition-delay:.32s}
+  .stagger.visible > *:nth-child(6){opacity:1;transform:none;transition-delay:.39s}
+  .stagger.visible > *:nth-child(7){opacity:1;transform:none;transition-delay:.46s}
+  .stagger.visible > *:nth-child(8){opacity:1;transform:none;transition-delay:.53s}
+
+  /* ── TEXT CLIP REVEAL (fable / editorial style) ── */
+  /* Wrap words in .clip-line; each line slides up from behind a mask */
+  .clip-wrap{overflow:hidden;display:block}
+  .clip-line{display:block;transform:translateY(105%);opacity:0;transition:transform .7s cubic-bezier(.22,1,.36,1),opacity .3s ease}
+  .clip-line.visible{transform:translateY(0);opacity:1}
+  .clip-line:nth-child(2){transition-delay:.12s}
+  .clip-line:nth-child(3){transition-delay:.22s}
+
+  /* ── FLOATING PARTICLES (hero background) ── */
+  .particle-field{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:0}
+  .particle{position:absolute;width:2px;height:2px;background:var(--turmeric);border-radius:50%;opacity:0;animation:float-up 8s ease-in infinite}
+  @keyframes float-up{
+    0%{opacity:0;transform:translateY(0) scale(1)}
+    10%{opacity:.5}
+    80%{opacity:.15}
+    100%{opacity:0;transform:translateY(-140px) scale(.4)}
+  }
+
+  /* ── COUNTER NUMBERS (stamp values) ── */
+  .count-num{display:inline-block;transition:transform .4s}
+
+  /* ── SCALE-IN (for ledger tag icons) ── */
+  .scale-in{opacity:0;transform:scale(.7);transition:opacity .5s cubic-bezier(.34,1.56,.64,1),transform .5s cubic-bezier(.34,1.56,.64,1)}
+  .scale-in.visible{opacity:1;transform:scale(1)}
+
+  /* ── LINE DRAW (horizontal rule decoration) ── */
+  .line-draw{width:0;height:1px;background:var(--turmeric);transition:width .9s cubic-bezier(.22,1,.36,1);display:block;margin:.5rem 0 1.5rem}
+  .line-draw.visible{width:3rem}
+
+  /* ── FADE-BLUR (section paragraphs) ── */
+  .fade-blur{opacity:0;filter:blur(4px);transition:opacity .7s ease,filter .7s ease}
+  .fade-blur.visible{opacity:1;filter:blur(0)}
+
+  /* ── HAMBURGER MENU ── */
+  .hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;padding:.4rem;background:none;border:none}
+  .hamburger span{display:block;width:22px;height:2px;background:var(--paper);border-radius:2px;transition:all .25s}
+  .hamburger.open span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+  .hamburger.open span:nth-child(2){opacity:0}
+  .hamburger.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+  .mobile-menu{
+    display:none;position:fixed;top:56px;left:0;right:0;z-index:49;
+    background:var(--indigo);border-bottom:1px solid var(--line-dk);
+    flex-direction:column;padding:.5rem 0;
+  }
+  .mobile-menu.open{display:flex}
+  .mobile-menu a{
+    padding:.85rem 1.75rem;font-size:.9rem;color:#9FB4BC;
+    text-decoration:none;border-bottom:1px solid rgba(255,255,255,.05);
+    transition:background .15s,color .15s;
+  }
+  .mobile-menu a:hover{background:rgba(255,255,255,.05);color:var(--turmeric)}
+
+  /* ── RESPONSIVE ── */
   @media(max-width:760px){
-    .hero-grid{grid-template-columns:1fr;gap:2rem}
+    /* nav */
     .nav-links{display:none}
-    .ledger-row{grid-template-columns:auto 1fr;gap:.7rem}
-    .lr-count{grid-column:2;text-align:left;font-size:1.2rem;margin-top:.3rem}
-    .foot-grid{flex-direction:column;text-align:center}
+    .hamburger{display:flex}
+
+    /* hero */
+    .hero{padding:3rem 0 0}
+    .hero-grid{grid-template-columns:1fr;gap:1.8rem}
+    .hero h1{font-size:clamp(2rem,8vw,3rem)}
+    .hero-lead{font-size:.95rem;max-width:100%}
+    .hero-actions{flex-direction:column;align-items:flex-start}
+    .btn{width:100%;justify-content:center}
+    .stamp{margin-top:.5rem}
+
+    /* ribbon */
+    .ribbon{flex-direction:column}
+    .rseg{padding:.65rem .5rem}
+    .rseg .s-mon{font-size:.55rem}
+    .ribbon-foot{gap:.8rem}
+
+    /* sections */
+    section{padding:3rem 0}
+    .sec-head h2{font-size:1.55rem}
+    .wrap{padding:0 1.1rem}
+
+    /* dashboard tabs */
+    .tabs{display:flex;width:100%;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;
+      scroll-snap-type:x mandatory;border-radius:3px}
+    .tab{flex-shrink:0;font-size:.75rem;padding:.5rem .9rem;scroll-snap-align:start}
+    .screen-body{padding-bottom:65%}
+    .screen-inner h3{font-size:1.1rem}
+    .screen-inner p{font-size:.76rem}
+    .screen-inner .open{font-size:.8rem;padding:.6rem 1.2rem}
+
+    /* ledger */
+    .ledger-row{grid-template-columns:auto 1fr;gap:.6rem}
+    .lr-count{grid-column:2;text-align:left;font-size:1.1rem;margin-top:.25rem}
+    .lr-main .lr-name{font-size:.82rem}
+    .lr-main .lr-cols{font-size:.7rem}
+
+    /* viz charts: stack vertically */
+    div[style*="grid-template-columns:1.6fr 1fr"]{
+      display:flex !important;flex-direction:column !important;gap:1rem !important
+    }
+
+    /* pipeline nodes */
+    .flow{grid-template-columns:1fr 1fr}
+    .node{padding:1rem}
+    .node h4{font-size:.95rem}
+    .node p{font-size:.75rem}
+
+    /* assets */
+    .assets{grid-template-columns:1fr}
+
+    /* team */
+    .team{grid-template-columns:1fr 1fr}
+
+    /* footer */
+    .foot-grid{flex-direction:column;text-align:center;gap:.8rem}
     .foot-meta{text-align:center}
+
+    /* steps */
+    .step{gap:.75rem}
+    .code pre{font-size:.7rem}
+    .code{padding:.75rem .9rem}
+  }
+
+  @media(max-width:420px){
+    .flow{grid-template-columns:1fr}
+    .team{grid-template-columns:1fr}
+    .hero h1{font-size:1.85rem}
+    .screen-badge{font-size:.58rem}
   }
 </style>
 </head>
@@ -194,32 +377,50 @@
       <a href="#team">Team</a>
       <a href="#setup">Setup</a>
     </div>
+    <button class="hamburger" id="hbg" aria-label="Menu" onclick="toggleMenu()">
+      <span></span><span></span><span></span>
+    </button>
   </div>
 </nav>
+<div class="mobile-menu" id="mob-menu">
+  <a href="#dashboard" onclick="closeMenu()">Dashboards</a>
+  <a href="#model"     onclick="closeMenu()">Data Model</a>
+  <a href="#pipeline"  onclick="closeMenu()">Pipeline</a>
+  <a href="#assets"    onclick="closeMenu()">Assets</a>
+  <a href="#team"      onclick="closeMenu()">Team</a>
+  <a href="#setup"     onclick="closeMenu()">Setup</a>
+</div>
 
-<header class="hero" id="top">
-  <div class="wrap">
+<header class="hero" id="top" style="position:relative">
+  <!-- floating particle field -->
+  <div class="particle-field" id="particles" aria-hidden="true"></div>
+
+  <div class="wrap" style="position:relative;z-index:1">
     <div class="hero-grid">
-      <div>
+      <div class="reveal-left">
         <p class="eyebrow">Mul Biotech Farms · 2026</p>
-        <h1>An almanac of <em>crops, water &amp; risk</em> across India</h1>
+        <h1>
+          <span class="clip-wrap"><span class="clip-line">An almanac of</span></span>
+          <span class="clip-wrap"><span class="clip-line"><em>crops, water &amp; risk</em></span></span>
+          <span class="clip-wrap"><span class="clip-line">across India</span></span>
+        </h1>
         <p class="hero-lead">A resource-intelligence dashboard covering every Indian state — crop calendars, water footprints, irrigation risk, and structured field research, all built on one clean data model.</p>
         <div class="hero-actions">
           <a class="btn btn-solid" href="#dashboard">Open the dashboards</a>
           <a class="btn btn-ghost" href="#model">See the data model</a>
         </div>
       </div>
-      <div class="stamp">
+      <div class="stamp reveal-right">
         <div class="stamp-top">
           <span class="t">Project Ledger</span>
           <span class="t">Mul Biotech Farms · 2026</span>
         </div>
         <div class="stamp-rows">
-          <div class="srow"><span class="k">States mapped</span><span class="v hl">28</span></div>
-          <div class="srow"><span class="k">Mandi price records</span><span class="v">91,000+</span></div>
-          <div class="srow"><span class="k">Crop timeline entries</span><span class="v">511</span></div>
-          <div class="srow"><span class="k">Relational tables</span><span class="v">6</span></div>
-          <div class="srow"><span class="k">Data issues resolved</span><span class="v hl">87</span></div>
+          <div class="srow"><span class="k">States mapped</span><span class="v hl"><span class="count-num" data-target="28">0</span></span></div>
+          <div class="srow"><span class="k">Mandi price records</span><span class="v"><span class="count-num" data-target="91000" data-suffix="K+">0</span></span></div>
+          <div class="srow"><span class="k">Crop timeline entries</span><span class="v"><span class="count-num" data-target="511">0</span></span></div>
+          <div class="srow"><span class="k">Relational tables</span><span class="v"><span class="count-num" data-target="6">0</span></span></div>
+          <div class="srow"><span class="k">Data issues resolved</span><span class="v hl"><span class="count-num" data-target="87">0</span></span></div>
         </div>
       </div>
     </div>
@@ -254,32 +455,36 @@
 
 <section id="dashboard">
   <div class="wrap">
-    <div class="sec-head">
+    <div class="sec-head reveal">
       <span class="sec-num">01 — LIVE REPORTS</span>
+      <span class="line-draw"></span>
       <h2>Three Power BI dashboards</h2>
-      <p>Select a report below. Each opens in Power BI — pick a state on the map to load its full agricultural dossier.</p>
+      <p class="fade-blur">Select a report below and download the <code>.pbix</code> file — open it in Power BI Desktop to explore the full interactive dossier.</p>
     </div>
     <div class="tabs">
       <button class="tab on" onclick="pick(this,'kartik')">Crop Water &amp; Resource</button>
       <button class="tab" onclick="pick(this,'malvika')">Executive Commodity</button>
       <button class="tab" onclick="pick(this,'lavanya')">Price Intelligence</button>
     </div>
-    <div class="screen">
+    <div class="screen reveal">
       <div class="screen-bar">
         <span class="sd" style="background:#E05A48"></span>
         <span class="sd" style="background:#DFA425"></span>
         <span class="sd" style="background:#5B7A3F"></span>
         <span class="screen-file" id="scr-file">india_crop_water_resource_dashboard.pbix</span>
       </div>
-      <div class="screen-body">
+      <div class="screen-body" id="scr-body" onclick="document.getElementById('scr-open').click()">
+        <!-- blurred thumbnail — src swapped by JS when tab changes -->
+        <div class="screen-bg" id="scr-bg" style="background-image:url('thumbnails/kartik_thumb.png')"></div>
         <div class="screen-inner">
-          <div class="screen-emoji">🌾</div>
-          <p>Hosted on the team's Power BI workspace. Public embedding is pending admin approval — until then, open the report directly.</p>
-          <a class="open" id="scr-open" href="https://app.powerbi.com/groups/me/reports/a0292903-1432-4493-9f5f-a8a94678a6e2" target="_blank" rel="noopener">↗ Open report</a>
+          <div class="screen-badge"><span></span> Power BI · .pbix Download</div>
+          <h3 id="scr-title">Crop Water &amp; Resource Dashboard</h3>
+          <p id="scr-desc">28 states · Irrigation risk · Water footprint · Crop season calendar</p>
+          <a class="open" id="scr-open" data-url="https://github.com/soumodip18/IRBAS-Agricultural-Intelligence-Dashboard/raw/main/dashboard/india_crop_water_resource_dashboard-kartik.pbix" href="#" onclick="event.preventDefault();event.stopPropagation();showDisclaimer(this.dataset.url)">↓ Download .pbix</a>
         </div>
       </div>
     </div>
-    <p class="note"><b>To embed:</b> once the report is published from an account with web-publish enabled, paste the iframe from <em>Power BI → Share → Embed</em> into <code>index.html</code> (replacing the placeholder above).</p>
+
   </div>
 </section>
 
@@ -287,10 +492,11 @@
   <div class="wrap">
     <div class="sec-head">
       <span class="sec-num">02 — ARCHITECTURE</span>
+      <span class="line-draw"></span>
       <h2>One dimension, five facts</h2>
-      <p>A star schema. Every fact table joins back to <code>dim_State</code> on the state name.</p>
+      <p class="fade-blur">A star schema. Every fact table joins back to <code>dim_State</code> on the state name.</p>
     </div>
-    <div class="ledger">
+    <div class="ledger stagger reveal">
       <div class="ledger-row">
         <span class="lr-tag dim">Dim</span>
         <div class="lr-main"><div class="lr-name">dim_State</div><div class="lr-cols">State · Region · Contributor · SourceSheet</div></div>
@@ -330,10 +536,11 @@
   <div class="wrap">
     <div class="sec-head">
       <span class="sec-num">03 — ENGINEERING</span>
+      <span class="line-draw"></span>
       <h2>From raw sheets to a clean model</h2>
-      <p>Seven stages take multi-contributor research and scraped market data into one normalized workbook.</p>
+      <p class="fade-blur">Seven stages take multi-contributor research and scraped market data into one normalized workbook.</p>
     </div>
-    <div class="flow">
+    <div class="flow stagger">
       <div class="node"><span class="node-n">STAGE 01</span><h4>Scrape</h4><p>Selenium headless Chrome pulls commodity prices from 30 state portals, clicking through pagination automatically.</p><div class="file">cloud_pipeline.py</div></div>
       <div class="node"><span class="node-n">STAGE 02</span><h4>Sync</h4><p>Scraped CSV uploads to Google Drive via a service account. GitHub Actions runs it on a daily schedule.</p><div class="file">.github/workflows/scrape.yml</div></div>
       <div class="node"><span class="node-n">STAGE 03</span><h4>Extract</h4><p>All 29 research sheets parsed into six structured tables, cached with pickle to skip repeat work.</p><div class="file">scripts/etl/</div></div>
@@ -350,39 +557,40 @@
   <div class="wrap">
     <div class="sec-head">
       <span class="sec-num">04 — REPOSITORY</span>
+      <span class="line-draw"></span>
       <h2>Everything is version-controlled</h2>
-      <p>Dashboards, datasets, scripts, and docs all live in the repo.</p>
+      <p class="fade-blur">Dashboards, datasets, scripts, and docs all live in the repo.</p>
     </div>
-    <div class="assets">
+    <div class="assets stagger">
       <div class="asset">
         <div class="asset-top"><span class="asset-emoji">📊</span><span class="asset-name">india_crop_water_resource_dashboard.pbix</span></div>
         <p class="asset-desc">Crop water &amp; resource deep dive. Page 1: state dossier. Page 2: crop economics &amp; water sustainability.</p>
-        <div class="asset-foot"><span class="asset-size">1.3 MB · dashboard/</span><a class="asset-dl" href="dashboard/india_crop_water_resource_dashboard-kartik.pbix">↓ PBIX</a></div>
+        <div class="asset-foot"><span class="asset-size">1.3 MB · dashboard/</span><a class="asset-dl repo" href="#" onclick="event.preventDefault();showDisclaimer('https://github.com/soumodip18/IRBAS-Agricultural-Intelligence-Dashboard/raw/main/dashboard/india_crop_water_resource_dashboard-kartik.pbix')">↓ PBIX</a></div>
       </div>
       <div class="asset">
         <div class="asset-top"><span class="asset-emoji">📊</span><span class="asset-name">executive_commodity_analysis.pbix</span></div>
         <p class="asset-desc">Executive commodity analysis and state-level market intelligence report.</p>
-        <div class="asset-foot"><span class="asset-size">1.1 MB · dashboard/</span><a class="asset-dl" href="dashboard/executive_commodity_analysis-malvika.pbix">↓ PBIX</a></div>
+        <div class="asset-foot"><span class="asset-size">1.1 MB · dashboard/</span><a class="asset-dl repo" href="#" onclick="event.preventDefault();showDisclaimer('https://github.com/soumodip18/IRBAS-Agricultural-Intelligence-Dashboard/raw/main/dashboard/executive_commodity_analysis-malvika.pbix')">↓ PBIX</a></div>
       </div>
       <div class="asset">
         <div class="asset-top"><span class="asset-emoji">📊</span><span class="asset-name">commodity_price_intelligence.pbix</span></div>
         <p class="asset-desc">Commodity price intelligence and mandi market analytics across states.</p>
-        <div class="asset-foot"><span class="asset-size">1.1 MB · dashboard/</span><a class="asset-dl" href="dashboard/commodity_price_intelligence_dashboard-lavanya.pbix">↓ PBIX</a></div>
+        <div class="asset-foot"><span class="asset-size">1.1 MB · dashboard/</span><a class="asset-dl repo" href="#" onclick="event.preventDefault();showDisclaimer('https://github.com/soumodip18/IRBAS-Agricultural-Intelligence-Dashboard/raw/main/dashboard/commodity_price_intelligence_dashboard-lavanya.pbix')">↓ PBIX</a></div>
       </div>
       <div class="asset">
         <div class="asset-top"><span class="asset-emoji">🗃️</span><span class="asset-name">Custom_PowerBI_Agriculture_Model.xlsx</span></div>
         <p class="asset-desc">The normalized star-schema workbook. Six Excel Table objects, zero blanks across all tables.</p>
-        <div class="asset-foot"><span class="asset-size">~120 KB · data/</span><a class="asset-dl" href="data/Custom_PowerBI_Agriculture_Model.xlsx">↓ XLSX</a></div>
+        <div class="asset-foot"><span class="asset-size">~120 KB · data/</span><a class="asset-dl repo" href="#" onclick="event.preventDefault();showDisclaimer('https://github.com/soumodip18/IRBAS-Agricultural-Intelligence-Dashboard/raw/main/data/Custom_PowerBI_Agriculture_Model.xlsx')">↓ XLSX</a></div>
       </div>
       <div class="asset">
         <div class="asset-top"><span class="asset-emoji">🗂️</span><span class="asset-name">State Assessment Dashboard Agriculture.xlsx</span></div>
         <p class="asset-desc">The original 29-sheet research workbook from all four contributors, before cleaning.</p>
-        <div class="asset-foot"><span class="asset-size">523 KB · data/</span><a class="asset-dl" href="data/State Assessment Dashboard Agriculture.xlsx">↓ XLSX</a></div>
+        <div class="asset-foot"><span class="asset-size">523 KB · data/</span><a class="asset-dl repo" href="#" onclick="event.preventDefault();showDisclaimer('https://github.com/soumodip18/IRBAS-Agricultural-Intelligence-Dashboard/raw/main/data/State%20Assessment%20Dashboard%20Agriculture.xlsx')">↓ XLSX</a></div>
       </div>
       <div class="asset">
         <div class="asset-top"><span class="asset-emoji">🐍</span><span class="asset-name">cloud_pipeline.py</span></div>
         <p class="asset-desc">Selenium scraper plus Google Drive uploader. Pulls prices from 30 portals and syncs to the cloud.</p>
-        <div class="asset-foot"><span class="asset-size">6 KB · scripts/</span><a class="asset-dl" href="scripts/cloud_pipeline.py">↓ PY</a></div>
+        <div class="asset-foot"><span class="asset-size">6 KB · scripts/</span><a class="asset-dl repo" href="#" onclick="event.preventDefault();showDisclaimer('https://github.com/soumodip18/IRBAS-Agricultural-Intelligence-Dashboard/raw/main/scripts/cloud_pipeline.py')">↓ PY</a></div>
       </div>
     </div>
   </div>
@@ -392,11 +600,12 @@
   <div class="wrap">
     <div class="sec-head">
       <span class="sec-num">05 — TEAM</span>
+      <span class="line-draw"></span>
       <h2>Four researchers, one mentor</h2>
-      <p>State research was split across the team; each of the three dashboards was built by a different contributor.</p>
+      <p class="fade-blur">State research was split across the team; each of the three dashboards was built by a different contributor.</p>
     </div>
-    <div class="team">
-      <div class="member"><div class="m-avatar" style="background:#5B7A3F">KP</div><div class="m-name">Kartik Patade</div><div class="m-role">Data engineering, ETL &amp; normalization pipeline, crop water &amp; resource dashboard</div></div>
+    <div class="team stagger">
+      <div class="member"><div class="m-avatar" style="background:#5B7A3F">KP</div><div class="m-name">Kartik Patade</div><div class="m-role">State research · ETL &amp; normalization pipeline · crop water &amp; resource dashboard</div></div>
       <div class="member"><div class="m-avatar" style="background:#B15A38">NK</div><div class="m-name">Nada Khan</div><div class="m-role">State qualitative research</div></div>
       <div class="member"><div class="m-avatar" style="background:#2C7A8C">LD</div><div class="m-name">Lavanya Dive</div><div class="m-role">State research · price intelligence dashboard</div></div>
       <div class="member"><div class="m-avatar" style="background:#3D5A80">MN</div><div class="m-name">Malavika Nair</div><div class="m-role">State research · executive commodity dashboard</div></div>
@@ -409,10 +618,11 @@
   <div class="wrap">
     <div class="sec-head">
       <span class="sec-num">06 — DOCUMENTATION</span>
+      <span class="line-draw"></span>
       <h2>Run it yourself</h2>
-      <p>Clone, install, scrape, and open the dashboards.</p>
+      <p class="fade-blur">Clone, install, scrape, and open the dashboards.</p>
     </div>
-    <div class="steps">
+    <div class="steps stagger">
       <div class="step"><div class="step-n">1</div><div><h4>Clone the repository</h4><div class="code"><pre><span class="g">git clone</span> https://github.com/soumodip18/IRBAS-Agricultural-Intelligence-Dashboard.git
 <span class="g">cd</span> Automated-Agricultural-Intelligence-Pipeline</pre></div></div></div>
       <div class="step"><div class="step-n">2</div><div><h4>Install dependencies</h4><div class="code"><pre><span class="g">pip install</span> selenium webdriver-manager pandas openpyxl \
@@ -425,6 +635,58 @@
   </div>
 </section>
 
+<section id="credits" style="background:var(--indigo);border-top:1px solid var(--line-dk)">
+  <div class="wrap" style="padding-top:3.5rem;padding-bottom:3.5rem">
+    <div class="sec-head reveal">
+      <span class="sec-num" style="color:#8AA3AB">07 — CREDITS &amp; ATTRIBUTION</span>
+      <span class="line-draw"></span>
+      <h2 style="color:var(--paper)">Built under Mul Biotech Farms</h2>
+      <p class="fade-blur" style="color:#B7C6CC">This project is open-access for researchers, policymakers, and agricultural professionals. Please credit the team and organisation when sharing or referencing this work.</p>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:2rem;margin-top:2.5rem" class="stagger reveal">
+
+      <div style="border:1px solid var(--line-dk);background:var(--indigo-2);padding:1.6rem;border-radius:2px">
+        <div style="font-family:var(--mono);font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:var(--turmeric);margin-bottom:1rem">Organisation</div>
+        <div style="font-family:var(--disp);font-size:1.2rem;color:var(--paper);font-weight:500;margin-bottom:.3rem">Mul Biotech Farms</div>
+        <div style="font-size:.82rem;color:#8AA3AB;margin-bottom:1.2rem">Strategic Agriculture Intelligence Framework · India, 2026</div>
+        <div style="font-family:var(--mono);font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:var(--turmeric);margin-bottom:.7rem">Project Mentor</div>
+        <div style="font-size:.9rem;color:var(--paper);font-weight:500">Soumodip Atanu Roy</div>
+        <div style="font-size:.78rem;color:#8AA3AB">Mul Biotech Farms · SequestraBionix</div>
+      </div>
+
+      <div style="border:1px solid var(--line-dk);background:var(--indigo-2);padding:1.6rem;border-radius:2px">
+        <div style="font-family:var(--mono);font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:var(--turmeric);margin-bottom:1rem">Research &amp; Analytics Team</div>
+        <div style="display:flex;flex-direction:column;gap:.75rem">
+          <div>
+            <div style="font-size:.88rem;color:var(--paper);font-weight:500">Kartik Patade</div>
+            <div style="font-size:.75rem;color:#8AA3AB">State research · ETL &amp; normalization pipeline · Crop water &amp; resource dashboard</div>
+          </div>
+          <div>
+            <div style="font-size:.88rem;color:var(--paper);font-weight:500">Nada Khan</div>
+            <div style="font-size:.75rem;color:#8AA3AB">State qualitative research</div>
+          </div>
+          <div>
+            <div style="font-size:.88rem;color:var(--paper);font-weight:500">Lavanya Dive</div>
+            <div style="font-size:.75rem;color:#8AA3AB">State research · Price intelligence dashboard</div>
+          </div>
+          <div>
+            <div style="font-size:.88rem;color:var(--paper);font-weight:500">Malavika Nair</div>
+            <div style="font-size:.75rem;color:#8AA3AB">State research · Executive commodity dashboard</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div style="margin-top:2rem;border:1px solid var(--line-dk);background:rgba(223,164,37,.06);padding:1.2rem 1.6rem;border-left:3px solid var(--turmeric);border-radius:2px" class="reveal">
+      <div style="font-family:var(--mono);font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:var(--turmeric);margin-bottom:.5rem">Disclaimer &amp; Usage</div>
+      <p style="font-size:.82rem;color:#B7C6CC;line-height:1.7">This dashboard and the underlying datasets were developed as part of the Strategic Agriculture Intelligence Framework under Mul Biotech Farms. Data is sourced from official government publications, peer-reviewed research, and verified agricultural databases. If you share, cite, or build upon this work, please credit <strong style="color:var(--paper)">Mul Biotech Farms</strong> and the contributing team. For research collaborations or data access, reach out via the GitHub repository.</p>
+    </div>
+
+  </div>
+</section>
+
 <footer>
   <div class="wrap">
     <div class="foot-grid">
@@ -432,24 +694,181 @@
       <div class="foot-meta">
         Agriculture Intelligence · Mul Biotech Farms · 2026<br />
         Mentor: Soumodip Atanu Roy · Mul Biotech Farms / SequestraBionix<br />
-        <a href="https://github.com/soumodip18/IRBAS-Agricultural-Intelligence-Dashboard">GitHub Repository</a> · MIT License
+        <a href="https://github.com/soumodip18/IRBAS-Agricultural-Intelligence-Dashboard" onclick="event.preventDefault();showDisclaimer('https://github.com/soumodip18/IRBAS-Agricultural-Intelligence-Dashboard')">GitHub Repository</a> · MIT License
       </div>
     </div>
   </div>
 </footer>
 
+<!-- ── DISCLAIMER OVERLAY ── -->
+<div id="disc-overlay" style="position:fixed;inset:0;z-index:200;background:rgba(16,30,36,.85);backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:1rem">
+  <div style="background:var(--indigo);border:1px solid var(--line-dk);max-width:500px;width:100%;border-radius:4px;padding:2rem;position:relative">
+    <div style="font-family:var(--mono);font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:var(--turmeric);margin-bottom:.75rem">Before you continue</div>
+    <h3 style="font-family:var(--disp);font-weight:400;font-size:1.25rem;color:var(--paper);margin-bottom:.9rem;line-height:1.25">Attribution &amp; Usage Agreement</h3>
+    <p style="font-size:.83rem;color:#B7C6CC;line-height:1.75;margin-bottom:1rem">This project was developed under <strong style="color:var(--paper)">Mul Biotech Farms</strong> by the contributing research team. By accessing, downloading, or sharing this work, you agree to the following terms:</p>
+    <span style="display:block;padding:.85rem .9rem;border-left:2px solid var(--turmeric);background:rgba(223,164,37,.06);color:#D4C9AE;font-size:.79rem;line-height:2;margin-bottom:1rem">
+      · Credit <strong style="color:var(--paper)">Mul Biotech Farms</strong> and the team in any publication, post, or presentation<br>
+      · Do not redistribute the data, dashboards, or scripts as your own work<br>
+      · Pass explicit credits to the contributing researchers when sharing
+    </span>
+    <div style="padding:.75rem .9rem;border:1px solid #7A2020;background:rgba(180,30,30,.12);border-radius:2px;margin-bottom:1.3rem">
+      <span style="font-family:var(--mono);font-size:.63rem;letter-spacing:.1em;text-transform:uppercase;color:#E07070;display:block;margin-bottom:.35rem">⚠ Warning</span>
+      <p style="font-size:.77rem;color:#E0A0A0;line-height:1.65">Unauthorized use, plagiarism, or failure to provide explicit attribution constitutes a violation of the usage terms and will result in intellectual property reporting and action.</p>
+    </div>
+    <div style="display:flex;gap:.75rem;justify-content:flex-end;flex-wrap:wrap">
+      <button onclick="closeDisclaimer()" style="padding:.6rem 1.2rem;border:1px solid var(--line-dk);background:transparent;color:#9FB4BC;border-radius:2px;font-size:.82rem;cursor:pointer;font-family:var(--sans)">Cancel</button>
+      <button id="disc-url" onclick="proceedDownload()" data-href="" style="padding:.6rem 1.4rem;background:var(--turmeric);color:var(--indigo);border:none;border-radius:2px;font-size:.82rem;font-weight:700;cursor:pointer;font-family:var(--sans)">I agree · Continue ↗</button>
+    </div>
+  </div>
+</div>
+
 <script>
+  /* ── TAB SWITCHING ── */
   const R = {
-    kartik:{file:'india_crop_water_resource_dashboard.pbix',url:'https://app.powerbi.com/groups/me/reports/a0292903-1432-4493-9f5f-a8a94678a6e2'},
-    malvika:{file:'executive_commodity_analysis.pbix',url:'https://app.powerbi.com/groups/me/reports/a0292903-1432-4493-9f5f-a8a94678a6e2'},
-    lavanya:{file:'commodity_price_intelligence_dashboard.pbix',url:'https://app.powerbi.com/groups/me/reports/a0292903-1432-4493-9f5f-a8a94678a6e2'}
+    kartik:{
+      file:'india_crop_water_resource_dashboard.pbix',
+      url:'https://github.com/soumodip18/IRBAS-Agricultural-Intelligence-Dashboard/raw/main/dashboard/india_crop_water_resource_dashboard-kartik.pbix',
+      thumb:'thumbnails/kartik_thumb.png',
+      title:'Crop Water \u0026 Resource Dashboard',
+      desc:'28 states \u00b7 Irrigation risk \u00b7 Water footprint \u00b7 Crop season calendar'
+    },
+    malvika:{
+      file:'executive_commodity_analysis.pbix',
+      url:'https://github.com/soumodip18/IRBAS-Agricultural-Intelligence-Dashboard/raw/main/dashboard/executive_commodity_analysis-malvika.pbix',
+      thumb:'thumbnails/malvika_thumb.png',
+      title:'Executive Commodity Analysis',
+      desc:'State-level market intelligence \u00b7 Commodity price trends \u00b7 Region comparison'
+    },
+    lavanya:{
+      file:'commodity_price_intelligence_dashboard.pbix',
+      url:'https://github.com/soumodip18/IRBAS-Agricultural-Intelligence-Dashboard/raw/main/dashboard/commodity_price_intelligence_dashboard-lavanya.pbix',
+      thumb:'thumbnails/lavanya_thumb.png',
+      title:'Commodity Price Intelligence',
+      desc:'Mandi price analytics \u00b7 District-level breakdown \u00b7 Arrival volume trends'
+    }
   };
   function pick(btn,key){
     document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
     btn.classList.add('on');
-    document.getElementById('scr-file').textContent = R[key].file;
-    document.getElementById('scr-open').href = R[key].url;
+    const d = R[key];
+    document.getElementById('scr-file').textContent  = d.file;
+    document.getElementById('scr-open').dataset.url  = d.url;
+    document.getElementById('scr-bg').style.backgroundImage = 'url(\''+d.thumb+'\')';
+    document.getElementById('scr-title').innerHTML   = d.title;
+    document.getElementById('scr-desc').textContent  = d.desc;
   }
+
+  /* ── DISCLAIMER POPUP ── */
+  function showDisclaimer(url){
+    document.getElementById('disc-url').dataset.href = url;
+    document.getElementById('disc-overlay').classList.add('open');
+  }
+  function closeDisclaimer(){ document.getElementById('disc-overlay').classList.remove('open'); }
+  function proceedDownload(){
+    var url = document.getElementById('disc-url').dataset.href;
+    closeDisclaimer();
+    window.open(url,'_blank','noopener');
+  }
+  function showRepoDisclaimer(e){
+    e.preventDefault();
+    showDisclaimer('https://github.com/soumodip18/IRBAS-Agricultural-Intelligence-Dashboard');
+  }
+
+  /* ── HAMBURGER ── */
+  function toggleMenu(){
+    document.getElementById('hbg').classList.toggle('open');
+    document.getElementById('mob-menu').classList.toggle('open');
+  }
+  function closeMenu(){
+    document.getElementById('hbg').classList.remove('open');
+    document.getElementById('mob-menu').classList.remove('open');
+  }
+  document.addEventListener('click', e=>{
+    const hbg=document.getElementById('hbg'), menu=document.getElementById('mob-menu');
+    if(hbg&&menu&&!hbg.contains(e.target)&&!menu.contains(e.target)) closeMenu();
+  });
+
+  /* ── PARTICLES ── */
+  (function spawnParticles(){
+    const field = document.getElementById('particles');
+    if(!field) return;
+    for(let i=0;i<22;i++){
+      const p = document.createElement('div');
+      p.className = 'particle';
+      p.style.cssText = `
+        left:${Math.random()*100}%;
+        bottom:${Math.random()*30}%;
+        width:${1+Math.random()*2.5}px;
+        height:${1+Math.random()*2.5}px;
+        animation-delay:${Math.random()*8}s;
+        animation-duration:${6+Math.random()*6}s;
+        opacity:${.2+Math.random()*.5}
+      `;
+      field.appendChild(p);
+    }
+  })();
+
+  /* ── NUMBER COUNTER ── */
+  function animateCounter(el){
+    const target = parseInt(el.dataset.target,10);
+    const suffix = el.dataset.suffix||'';
+    const isLarge = target >= 1000;
+    const duration = 1200;
+    const start = performance.now();
+    function step(now){
+      const p = Math.min((now-start)/duration,1);
+      // ease-out
+      const ease = 1-Math.pow(1-p,3);
+      const val = Math.round(ease*target);
+      el.textContent = isLarge
+        ? (val/1000).toFixed(0)+'K+'
+        : val.toLocaleString()+suffix;
+      if(p<1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+
+  /* ── INTERSECTION OBSERVER — fires at 20% depth, 60px bottom margin ── */
+  const obs = new IntersectionObserver((entries)=>{
+    entries.forEach(entry=>{
+      if(!entry.isIntersecting) return;
+      const el = entry.target;
+
+      // standard reveal classes
+      if(el.classList.contains('reveal')||
+         el.classList.contains('reveal-left')||
+         el.classList.contains('reveal-right')||
+         el.classList.contains('stagger')){
+        el.classList.add('visible');
+      }
+
+      // clip lines inside this element
+      el.querySelectorAll('.clip-line').forEach(c=>c.classList.add('visible'));
+
+      // line-draw inside this element
+      el.querySelectorAll('.line-draw').forEach(l=>l.classList.add('visible'));
+
+      // fade-blur inside this element
+      el.querySelectorAll('.fade-blur').forEach(f=>f.classList.add('visible'));
+
+      // counters
+      el.querySelectorAll('.count-num').forEach(c=>animateCounter(c));
+
+      obs.unobserve(el);
+    });
+  },{
+    threshold: 0.2,           // element must be 20% visible — fires LATER
+    rootMargin: '0px 0px -80px 0px'  // extra 80px buffer from bottom edge
+  });
+
+  // observe everything
+  document.querySelectorAll(
+    '.reveal,.reveal-left,.reveal-right,.stagger,.stamp'
+  ).forEach(el=>obs.observe(el));
+
+  // also observe sec-head elements for their child animations
+  document.querySelectorAll('.sec-head').forEach(el=>obs.observe(el));
+
 </script>
 </body>
 </html>

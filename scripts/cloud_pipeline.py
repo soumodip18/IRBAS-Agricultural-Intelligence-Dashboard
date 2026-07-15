@@ -13,6 +13,7 @@ import time
 from datetime import datetime
 from io import StringIO
 import os
+import json
 
 # ==========================================
 # 1. CONFIGURATION: ALL 30 STATES & CLOUD
@@ -34,8 +35,8 @@ STATES = {
 BASE_URL = "https://www.commoditymarketlive.com/mandi-price-state/"
 FILE_NAME = "India_Master_Mandi_DB.csv"
 
-# Google Drive Folder ID (You get this from the URL of your shared Drive folder)
-DRIVE_FOLDER_ID = "1qNvYhI7JnUpX7ask8MguPEeYHNsLY2EL" 
+# Google Drive Folder ID — set as a GitHub Actions secret named DRIVE_FOLDER_ID
+DRIVE_FOLDER_ID = os.environ.get('DRIVE_FOLDER_ID', '') 
 
 def clean_currency(col):
     return col.astype(str).str.replace('₹', '', regex=False).str.replace(',', '', regex=False).str.strip().astype(float)
@@ -116,7 +117,7 @@ def scrape_all_states():
 def upload_to_drive():
     print("☁️ Uploading to Google Drive...")
     # Authenticate using the hidden secret key
-    credentials = service_account.Credentials.from_service_account_info(eval(os.environ['GCP_CREDENTIALS']))
+    credentials = service_account.Credentials.from_service_account_info(json.loads(os.environ['GCP_CREDENTIALS']))
     service = build('drive', 'v3', credentials=credentials)
     
     file_metadata = {'name': FILE_NAME, 'parents': [DRIVE_FOLDER_ID]}

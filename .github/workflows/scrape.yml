@@ -34,6 +34,7 @@ jobs:
       - name: Run scraper
         env:
           GCP_CREDENTIALS: ${{ secrets.GCP_CREDENTIALS }}
+          DRIVE_FOLDER_ID: ${{ secrets.DRIVE_FOLDER_ID }}
         run: |
           python scripts/cloud_pipeline.py
 

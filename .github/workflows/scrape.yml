@@ -1,42 +1,23 @@
-name: Daily Mandi Price Scraper
-
+name: Manual Mandi Baseline Scraper
 on:
-  schedule:
-    # Runs every day at 6:00 AM IST (00:30 UTC)
-    #- cron: '30 0 * * *'
   workflow_dispatch:
-    # Also allows manual trigger from GitHub Actions tab
 
 jobs:
-  scrape:
+  scrape-and-upload:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
-
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+      - name: Checkout Repository Code
+        uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
+      - name: Initialize Python Environment
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: '3.10'
 
-      - name: Install Chrome
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y chromium-browser
+      - name: Install Cloud Dependencies
+        run: pip install selenium webdriver-manager pandas google-api-python-client google-auth-httplib2 google-auth-oauthlib lxml
 
-      - name: Install Python dependencies
-        run: |
-          pip install selenium webdriver-manager pandas openpyxl \
-                      google-auth google-api-python-client
-
-      - name: Run scraper
+      - name: Execute National Scraper
         env:
           GCP_CREDENTIALS: ${{ secrets.GCP_CREDENTIALS }}
-          DRIVE_FOLDER_ID: ${{ secrets.DRIVE_FOLDER_ID }}
-        run: |
-          python scripts/cloud_pipeline.py
-
-      - name: Log completion
-        run: echo "Scrape completed at $(date)"
+        run: python scripts/cloud_pipeline.py
